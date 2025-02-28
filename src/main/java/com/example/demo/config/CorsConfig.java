@@ -14,7 +14,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // Разрешить запросы к API
-                        .allowedOrigins("http://localhost:5173") // Разрешить запросы от React
+                        .allowedOrigins("http://localhost:5174") // Разрешить запросы от React
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")
                         .allowCredentials(true);

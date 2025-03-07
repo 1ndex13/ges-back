@@ -29,6 +29,15 @@ public class AuthService {
     private JavaMailSender mailSender;
 
     public User registerUser(User user) {
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new RuntimeException("Пользователь с таким именем уже существует");
+        }
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new RuntimeException("Пользователь с таким email уже существует");
+        }
+        if (!user.getPassword().equals(user.getConfirmPassword())) {
+            throw new RuntimeException("Пароли не совпадают");
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }

@@ -18,6 +18,7 @@ public class SecurityConfig {
                 .csrf().disable() // Отключите CSRF для API
                 .authorizeHttpRequests()
                 .requestMatchers("/**").permitAll() // Разрешите доступ к эндпоинтам авторизации
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated() // Все остальные запросы требуют аутентификации
                 .and()
                 .httpBasic(); // Используйте базовую аутентификацию (или настройте JWT)

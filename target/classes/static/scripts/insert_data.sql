@@ -77,5 +77,5 @@ VALUES (7, 6);
 INSERT INTO public.books_authors (book_id, author_id)
 VALUES (7, 7);
 
-insert into public.users(id, username, email, password, confirm_password)
-values  (5, 'user', 'tyty@tyty.ru', 123, 123)
+insert into public.users(id, username, email, password)
+values  (5, 'user', 'tyty@tyty.ru', 123)

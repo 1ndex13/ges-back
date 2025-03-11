@@ -1,8 +1,10 @@
 package com.example.demo.service;
 
 import com.example.demo.model.PasswordResetToken;
+import com.example.demo.model.Role;
 import com.example.demo.model.User;
 import com.example.demo.repository.PasswordResetTokenRepository;
+import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -35,17 +37,35 @@ public class AuthService {
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new RuntimeException("Пользователь с таким email уже существует");
         }
-        if (!user.getPassword().equals(user.getConfirmPassword())) {
-            throw new RuntimeException("Пароли не совпадают");
-        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
 
     public Optional<User> authenticateUser(String username, String password) {
-        return userRepository.findByUsername(username)
-                .filter(user -> passwordEncoder.matches(password, user.getPassword()));
+        // Временная проверка для админа
+        if ("admin".equals(username) && "admin123".equals(password)) {
+            User adminUser = new User();
+            adminUser.setUsername("admin");
+            adminUser.setPassword(passwordEncoder.encode("admin123"));
+            adminUser.setRole("ADMIN"); // Устанавливаем роль как строку
+            return Optional.of(adminUser);
+        }
+
+        // Поиск пользователя в базе данных
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent() && passwordEncoder.matches(password, user.get().getPassword())) {
+            // Проверка или присвоение роли "USER"
+            if (user.get().getRole() == null || user.get().getRole().isEmpty()) {
+                user.get().setRole("USER"); // Присвоение роли "USER"
+                userRepository.save(user.get()); // Сохранение изменений
+            }
+            return user;
+        } else {
+            return Optional.empty();
+        }
     }
+
 
     public void createPasswordResetTokenForUser(String email) {
         Optional<User> userOptional = userRepository.findByEmail(email);
@@ -81,4 +101,5 @@ public class AuthService {
             throw new RuntimeException("Недействительный или просроченный токен");
         }
     }
+
 }

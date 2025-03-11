@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,14 +35,20 @@ public class AuthController {
         try {
             Optional<User> user = authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
             if (user.isPresent()) {
-                return ResponseEntity.ok(user.get());
+                // Возвращаем данные пользователя, включая роль
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("username", user.get().getUsername());
+                response.put("role", user.get().getRole()); // Добавляем роль
+                return ResponseEntity.ok(response);
             } else {
-                return ResponseEntity.status(401).body("Неверный логин или пароль");
+                return ResponseEntity.status(401).body(Map.of("success", false, "message", "Неверный логин или пароль"));
             }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Ошибка авторизации: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Ошибка авторизации: " + e.getMessage()));
         }
     }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam String email) {
         try {

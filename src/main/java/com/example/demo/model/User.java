@@ -23,9 +23,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private String confirmPassword;
-
+    private String role; // Добавляем поле role
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
@@ -33,5 +31,4 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
-
 }

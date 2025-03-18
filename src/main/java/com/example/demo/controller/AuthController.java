@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.RegisterRequest;
+import com.example.demo.model.Role;
 import com.example.demo.model.User;
 import com.example.demo.service.AuthService;
 import jakarta.validation.Valid;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -35,11 +36,10 @@ public class AuthController {
         try {
             Optional<User> user = authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
             if (user.isPresent()) {
-                // Возвращаем данные пользователя, включая роль
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
                 response.put("username", user.get().getUsername());
-                response.put("role", user.get().getRole()); // Добавляем роль
+                response.put("roles", user.get().getRoles().stream().map(Role::getName).collect(Collectors.toList()));
                 return ResponseEntity.ok(response);
             } else {
                 return ResponseEntity.status(401).body(Map.of("success", false, "message", "Неверный логин или пароль"));
@@ -48,25 +48,5 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Ошибка авторизации: " + e.getMessage()));
         }
     }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestParam String email) {
-        try {
-            authService.createPasswordResetTokenForUser(email);
-            return ResponseEntity.ok(Map.of("message", "Password reset email sent"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Error: " + e.getMessage()));
-        }
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
-        try {
-            authService.resetPassword(token, newPassword);
-            return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Error: " + e.getMessage()));
-        }
-    }
-
 }
+

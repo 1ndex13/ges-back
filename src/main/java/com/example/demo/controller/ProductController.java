@@ -3,9 +3,12 @@ package com.example.demo.controller;
 import com.example.demo.model.Product;
 import com.example.demo.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/products")
@@ -14,27 +17,10 @@ public class ProductController {
     @Autowired
     private ProductRepository productRepository;
 
-    @GetMapping
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
-    }
-
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public Product createProduct(@RequestBody Product product) {
-        return productRepository.save(product);
+    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+        Product savedProduct = productRepository.save(product);
+        return ResponseEntity.ok(savedProduct);
     }
 
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public Product updateProduct(@PathVariable int id, @RequestBody Product updatedProduct) {
-        updatedProduct.setId(id);
-        return productRepository.save(updatedProduct);
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public void deleteProduct(@PathVariable int id) {
-        productRepository.deleteById(id);
-    }
 }

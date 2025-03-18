@@ -8,7 +8,7 @@ import java.util.Set;
 
 @Data
 @Entity
-@Table(name = "users") // Указываем явное имя таблицы
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +23,8 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private String role; // Добавляем поле role
+    @Column(name = "role") // Явно указываем имя колонки
+    private String role; // Возвращаем поле role как строку
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

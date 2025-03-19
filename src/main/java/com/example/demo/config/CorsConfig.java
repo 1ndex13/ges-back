@@ -13,7 +13,7 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // Разрешить запросы к API
+                registry.addMapping("/api/**") // Разрешить запросы к API
                         .allowedOrigins("http://localhost:5174", "https://your-frontend-domain.com") // Разрешить запросы от React и для развертки других доменов
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")

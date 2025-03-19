@@ -21,5 +21,5 @@ public class Product {
     private String imgSrc;
 
     @Column(nullable = false)
-    private String to;
+    private String targetUrl;
 }

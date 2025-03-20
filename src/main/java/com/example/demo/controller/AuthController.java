@@ -25,9 +25,17 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
             User registeredUser = authService.registerUser(user);
-            return ResponseEntity.ok(registeredUser);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("username", registeredUser.getUsername());
+            response.put("email", registeredUser.getEmail());
+            response.put("roles", registeredUser.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Ошибка регистрации: " + e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Ошибка регистрации: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 

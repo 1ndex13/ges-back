@@ -29,7 +29,7 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Отключаем сессии
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/auth/**", "/api/auth/check", "/api/auth/logout").permitAll()
                 .requestMatchers("/api/products/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
                 .and()
@@ -43,9 +43,10 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("*")
+                        .allowedOrigins("http://localhost:5174") // Укажите домен фронтенда
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        .allowCredentials(true); // Разрешение учетных данных
             }
         };
     }

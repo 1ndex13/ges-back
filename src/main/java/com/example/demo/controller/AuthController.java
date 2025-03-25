@@ -4,8 +4,14 @@ import com.example.demo.dto.LoginRequest;
 import com.example.demo.model.Role;
 import com.example.demo.model.User;
 import com.example.demo.service.AuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -21,17 +27,26 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@RequestBody User user, HttpServletResponse httpResponse) {
         try {
             User registeredUser = authService.registerUser(user);
             String token = authService.generateToken(registeredUser);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("token", token);
-            response.put("username", registeredUser.getUsername());
-            response.put("email", registeredUser.getEmail());
-            response.put("roles", registeredUser.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
-            return ResponseEntity.ok(response);
+            Map<String, Object> responseBody = new HashMap<>(); // Переименовано из response
+            responseBody.put("success", true);
+            responseBody.put("token", token);
+            responseBody.put("username", registeredUser.getUsername());
+            responseBody.put("email", registeredUser.getEmail());
+            responseBody.put("roles", registeredUser.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
+
+            // Установка cookie с JWT
+            Cookie jwtCookie = new Cookie("jwtToken", token);
+            jwtCookie.setHttpOnly(true); // Защита от XSS
+            jwtCookie.setSecure(true); // Используйте только с HTTPS
+            jwtCookie.setPath("/"); // Доступно для всего приложения
+            jwtCookie.setMaxAge(3600); // Срок действия 1 час
+            httpResponse.addCookie(jwtCookie); // Используем httpResponse вместо response
+
+            return ResponseEntity.ok(responseBody);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
@@ -39,25 +54,58 @@ public class AuthController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
-
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse httpResponse) {
         try {
             Optional<User> userOpt = authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
                 String token = authService.generateToken(user);
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", true);
-                response.put("token", token);
-                response.put("username", user.getUsername());
-                response.put("roles", user.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
-                return ResponseEntity.ok(response);
+                Map<String, Object> responseBody = new HashMap<>(); // Переименовано из response
+                responseBody.put("success", true);
+                responseBody.put("username", user.getUsername());
+                responseBody.put("roles", user.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
+
+                // Установка cookie с JWT
+                Cookie jwtCookie = new Cookie("jwtToken", token);
+                jwtCookie.setHttpOnly(true); // Защита от XSS
+                jwtCookie.setSecure(true); // Используйте только с HTTPS
+                jwtCookie.setPath("/"); // Доступно для всего приложения
+                jwtCookie.setMaxAge(3600); // Срок действия 1 час
+                httpResponse.addCookie(jwtCookie);
+
+                return ResponseEntity.ok(responseBody);
             } else {
                 return ResponseEntity.status(401).body(Map.of("success", false, "message", "Неверный логин или пароль"));
             }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Ошибка авторизации: " + e.getMessage()));
         }
+    }
+
+    @GetMapping("/check")
+    public ResponseEntity<?> checkAuth(HttpServletRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            User user = (User) auth.getPrincipal();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("username", user.getUsername());
+            response.put("email", user.getEmail());
+            response.put("roles", user.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.status(401).body(Map.of("success", false, "message", "Не авторизован"));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("jwtToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // Удаляем cookie
+        response.addCookie(cookie);
+        return ResponseEntity.ok(Map.of("success", true, "message", "Выход выполнен"));
     }
 }

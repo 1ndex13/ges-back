@@ -1,6 +1,7 @@
 package com.example.demo.config.util;
 
 import com.example.demo.service.CustomUserDetailsService;
+import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,17 +28,35 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        final String authorizationHeader = request.getHeader("Authorization");
-
         String username = null;
         String jwt = null;
 
+        // Проверка заголовка Authorization
+        final String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtService.decodeToken(jwt).getSubject();
             } catch (Exception e) {
-                System.out.println("Invalid JWT token: " + e.getMessage());
+                System.out.println("Invalid JWT token from header: " + e.getMessage());
+            }
+        }
+
+        // Проверка cookie, если токен не найден в заголовке
+        if (jwt == null) {
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("jwtToken".equals(cookie.getName())) {
+                        jwt = cookie.getValue();
+                        try {
+                            username = jwtService.decodeToken(jwt).getSubject();
+                        } catch (Exception e) {
+                            System.out.println("Invalid JWT token from cookie: " + e.getMessage());
+                        }
+                        break;
+                    }
+                }
             }
         }
 

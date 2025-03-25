@@ -4,6 +4,7 @@ import com.example.demo.config.util.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,14 +27,15 @@ public class SecurityConfig {
         http
                 .csrf().disable()
                 .cors().and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Отключаем сессии
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/auth/**", "/api/auth/check", "/api/auth/logout").permitAll()
-                .requestMatchers("/api/products/**").hasRole("ADMIN")
+                .requestMatchers("/api/auth/**").permitAll() // Разрешено всем
+                .requestMatchers(HttpMethod.GET, "/api/products").authenticated() // Только аутентифицированным для GET
+                .requestMatchers("/api/products/**").hasRole("ADMIN") // POST, PUT, DELETE только для ADMIN
                 .anyRequest().authenticated()
                 .and()
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class); // Добавляем JWT-фильтр
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -43,10 +45,10 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5174") // Укажите домен фронтенда
+                        .allowedOrigins("http://localhost:5174")
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")
-                        .allowCredentials(true); // Разрешение учетных данных
+                        .allowCredentials(true);
             }
         };
     }

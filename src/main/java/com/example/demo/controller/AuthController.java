@@ -4,6 +4,7 @@ import com.example.demo.dto.LoginRequest;
 import com.example.demo.model.Role;
 import com.example.demo.model.User;
 import com.example.demo.service.AuthService;
+import com.example.demo.service.CustomUserDetailsService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -41,7 +42,7 @@ public class AuthController {
             // Установка cookie с JWT
             Cookie jwtCookie = new Cookie("jwtToken", token);
             jwtCookie.setHttpOnly(true); // Защита от XSS
-            jwtCookie.setSecure(true); // Используйте только с HTTPS
+            jwtCookie.setSecure(false); // Используйте только с HTTPS
             jwtCookie.setPath("/"); // Доступно для всего приложения
             jwtCookie.setMaxAge(3600); // Срок действия 1 час
             httpResponse.addCookie(jwtCookie); // Используем httpResponse вместо response
@@ -69,7 +70,7 @@ public class AuthController {
                 // Установка cookie с JWT
                 Cookie jwtCookie = new Cookie("jwtToken", token);
                 jwtCookie.setHttpOnly(true); // Защита от XSS
-                jwtCookie.setSecure(true); // Используйте только с HTTPS
+                jwtCookie.setSecure(false); // Используйте только с HTTPS
                 jwtCookie.setPath("/"); // Доступно для всего приложения
                 jwtCookie.setMaxAge(3600); // Срок действия 1 час
                 httpResponse.addCookie(jwtCookie);
@@ -86,8 +87,13 @@ public class AuthController {
     @GetMapping("/check")
     public ResponseEntity<?> checkAuth(HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Authentication: " + auth);
         if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
-            User user = (User) auth.getPrincipal();
+            System.out.println("Principal: " + auth.getPrincipal());
+            CustomUserDetailsService.CustomUserDetails userDetails =
+                    (CustomUserDetailsService.CustomUserDetails) auth.getPrincipal();
+            User user = userDetails.getUser();
+            System.out.println("User extracted: " + user.getUsername());
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("username", user.getUsername());

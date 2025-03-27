@@ -20,6 +20,4 @@ public class Product {
     @Column(name = "img_src")
     private String imgSrc;
 
-    @Column(nullable = false)
-    private String targetUrl;
 }

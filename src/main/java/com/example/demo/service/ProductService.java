@@ -4,7 +4,10 @@ import com.example.demo.model.Product;
 import com.example.demo.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,42 +15,63 @@ import java.util.Optional;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private static final String UPLOAD_DIR = "C:/uploads/"; // Укажите существующий путь
 
     @Autowired
     public ProductService(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
 
-    // Получить все товары
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
 
-    // Получить товар по ID
     public Optional<Product> getProductById(Long id) {
         return productRepository.findById(id);
     }
 
-    // Добавить новый товар
-    public Product addProduct(Product product) {
+    public Product addProduct(Product product, MultipartFile image) throws IOException {
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = saveImage(image);
+            product.setImgSrc(imageUrl);
+        }
         return productRepository.save(product);
     }
 
-    // Обновить существующий товар
-    public Product updateProduct(Long id, Product updatedProduct) {
+    public Product updateProduct(Long id, Product updatedProduct, MultipartFile image) throws IOException {
         return productRepository.findById(id)
                 .map(product -> {
                     product.setTitle(updatedProduct.getTitle());
                     product.setDescription(updatedProduct.getDescription());
-                    product.setImgSrc(updatedProduct.getImgSrc());
-                    product.setTargetUrl(updatedProduct.getTargetUrl());
+
+                    if (image != null && !image.isEmpty()) {
+                        try {
+                            String imageUrl = saveImage(image);
+                            product.setImgSrc(imageUrl);
+                        } catch (IOException e) {
+                            throw new RuntimeException("Ошибка при сохранении изображения", e);
+                        }
+                    }
+
                     return productRepository.save(product);
                 })
                 .orElseThrow(() -> new RuntimeException("Товар не найден"));
     }
 
-    // Удалить товар по ID
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
+    }
+
+    public String saveImage(MultipartFile image) throws IOException {
+        File uploadDir = new File(UPLOAD_DIR);
+        if (!uploadDir.exists()) {
+            System.out.println("Creating directory: " + UPLOAD_DIR);
+            uploadDir.mkdirs();
+        }
+        String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
+        File destinationFile = new File(uploadDir, fileName);
+        System.out.println("Saving to: " + destinationFile.getAbsolutePath());
+        image.transferTo(destinationFile);
+        return "/uploads/" + fileName;
     }
 }

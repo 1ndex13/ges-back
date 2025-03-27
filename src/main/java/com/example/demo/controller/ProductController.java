@@ -3,11 +3,13 @@ package com.example.demo.controller;
 import com.example.demo.model.Product;
 import com.example.demo.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
-
 
 @RestController
 @RequestMapping("/api/products")
@@ -20,13 +22,11 @@ public class ProductController {
         this.productService = productService;
     }
 
-    // Получить все товары
     @GetMapping
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
     }
 
-    // Получить товар по ID
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         return productService.getProductById(id)
@@ -34,24 +34,44 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Добавить новый товар
-    @PostMapping
-    public Product addProduct(@RequestBody Product product) {
-        return productService.addProduct(product);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Product> addProduct(
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+        System.out.println("Title: " + title);
+        System.out.println("Description: " + description);
+        System.out.println("Image: " + (image != null ? image.getOriginalFilename() : "null"));
+        try {
+            Product product = new Product();
+            product.setTitle(title);
+            product.setDescription(description);
+            Product savedProduct = productService.addProduct(product, image);
+            return ResponseEntity.ok(savedProduct);
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
     }
 
-    // Обновить существующий товар
-    @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product updatedProduct) {
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Product> updateProduct(
+            @PathVariable Long id,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
         try {
-            Product product = productService.updateProduct(id, updatedProduct);
+            Product updatedProduct = new Product();
+            updatedProduct.setTitle(title);
+            updatedProduct.setDescription(description);
+
+            Product product = productService.updateProduct(id, updatedProduct, image);
             return ResponseEntity.ok(product);
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | IOException e) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    // Удалить товар по ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         productService.deleteProduct(id);

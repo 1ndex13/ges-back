@@ -25,7 +25,7 @@ public class UserMapper {
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
-        // Пароль должен устанавливаться отдельно
+        user.setActive(dto.isActive()); // Добавьте эту строку
         return user;
     }
 }

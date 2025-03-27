@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.UserDto;
 import com.example.demo.mapper.UserMapper;
+import com.example.demo.model.User;
 import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,12 +34,24 @@ public class AdminUserController {
     public ResponseEntity<UserDto> updateUser(
             @PathVariable Long id,
             @RequestBody UserDto userDto) {
-        return ResponseEntity.ok(userMapper.toDto(userService.update(id, userMapper.toEntity(userDto))));
+        User user = userMapper.toEntity(userDto);
+        user.setActive(userDto.isActive()); // Добавьте эту строку
+        return ResponseEntity.ok(userMapper.toDto(userService.update(id, user)));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<UserDto>> searchUsers(
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Boolean active
+    ) {
+        List<UserDto> users = userService.searchUsers(username, email, active);
+        return ResponseEntity.ok(users);
     }
 }

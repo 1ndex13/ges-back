@@ -8,6 +8,7 @@ import com.example.demo.model.User;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,7 @@ public class UserService {
         user.setUsername(userDto.getUsername());
         user.setEmail(userDto.getEmail());
         user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setActive(true); // Теперь этот метод доступен
+        user.setActive(true);
 
         Set<Role> roles = userDto.getRoles().stream()
                 .map(roleName -> roleRepository.findByName(roleName)
@@ -90,7 +91,6 @@ public class UserService {
 
     public User update(Long id, User user) {
         User existing = userRepository.findById(id).orElseThrow();
-        // Обновляем поля
         existing.setUsername(user.getUsername());
         existing.setEmail(user.getEmail());
         return userRepository.save(existing);
@@ -98,5 +98,29 @@ public class UserService {
 
     public void delete(Long id) {
         userRepository.deleteById(id);
+    }
+
+    public List<UserDto> searchUsers(String username, String email, Boolean active) {
+        Specification<User> spec = Specification.where(null);
+
+        if (username != null && !username.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("username")), "%" + username.toLowerCase() + "%")
+            );
+        }
+        if (email != null && !email.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%")
+            );
+        }
+        if (active != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("active"), active)
+            );
+        }
+
+        return userRepository.findAll(spec).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 }

@@ -8,19 +8,24 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class ProductService {
-
     private final ProductRepository productRepository;
-    private static final String UPLOAD_DIR = "C:/uploads/"; // Укажите существующий путь
+    private final Path uploadPath;
 
     @Autowired
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository) throws IOException {
         this.productRepository = productRepository;
+        this.uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
+        Files.createDirectories(uploadPath);
     }
+
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
@@ -63,15 +68,9 @@ public class ProductService {
     }
 
     public String saveImage(MultipartFile image) throws IOException {
-        File uploadDir = new File(UPLOAD_DIR);
-        if (!uploadDir.exists()) {
-            System.out.println("Creating directory: " + UPLOAD_DIR);
-            uploadDir.mkdirs();
-        }
         String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-        File destinationFile = new File(uploadDir, fileName);
-        System.out.println("Saving to: " + destinationFile.getAbsolutePath());
-        image.transferTo(destinationFile);
+        Path targetPath = uploadPath.resolve(fileName);
+        image.transferTo(targetPath);
         return "/uploads/" + fileName;
     }
 }

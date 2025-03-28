@@ -2,6 +2,7 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.CollectionId;
 
 @Data
 @Entity
@@ -19,5 +20,4 @@ public class Product {
 
     @Column(name = "img_src")
     private String imgSrc;
-
 }

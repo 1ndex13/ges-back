@@ -8,13 +8,23 @@ import com.example.demo.model.User;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+
+
 
 @Service
 @RequiredArgsConstructor
@@ -123,4 +133,58 @@ public class UserService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
+
+    @Value("${app.base-url}")
+    private String baseUrl;
+
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    public void processForgotPassword(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь с таким email не найден"));
+
+        // Генерируем 6-значный код
+        String code = String.format("%06d", new Random().nextInt(999999));
+        user.setResetCode(code);
+        user.setCodeExpiryDate(LocalDateTime.now().plusMinutes(15)); // Код действует 15 минут
+        userRepository.save(user);
+
+        sendResetCodeEmail(user.getEmail(), code);
+    }
+
+    private void sendResetCodeEmail(String email, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Код для сброса пароля");
+        message.setText("Ваш код для сброса пароля: " + code +
+                "\n\nКод действителен в течение 15 минут.");
+        mailSender.send(message);
+    }
+
+    public void verifyResetCode(String email, String code) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        if (!code.equals(user.getResetCode())) {
+            throw new RuntimeException("Неверный код");
+        }
+
+        if (user.getCodeExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Срок действия кода истек");
+        }
+    }
+
+    public void resetPassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetCode(null);
+        user.setCodeExpiryDate(null);
+        userRepository.save(user);
+    }
 }
+
+

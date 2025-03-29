@@ -114,4 +114,56 @@ public class AuthController {
         response.addCookie(cookie);
         return ResponseEntity.ok(Map.of("success", true, "message", "Выход выполнен"));
     }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            authService.processForgotPassword(email);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Код для сброса пароля отправлен на email"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/verify-reset-code")
+    public ResponseEntity<?> verifyResetCode(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String code = request.get("code");
+            authService.verifyResetCode(email, code);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Код подтвержден"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String newPassword = request.get("newPassword");
+            authService.resetPassword(email, newPassword);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Пароль успешно изменен"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
 }

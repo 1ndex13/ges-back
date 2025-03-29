@@ -5,16 +5,28 @@ import com.example.demo.model.Role;
 import com.example.demo.model.User;
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Key;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
+
+    private final UserService userService;
+    private final Key jwtSecretKey;
+
+    public AuthService(UserService userService,
+                       @Value("${jwt.secret}") String jwtSecret) {
+        this.userService = userService;
+        this.jwtSecretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
 
     @Autowired
     private UserRepository userRepository;
@@ -27,6 +39,10 @@ public class AuthService {
 
     @Autowired
     private JwtService jwtService;
+
+    public void verifyResetCode(String email, String code) {
+        userService.verifyResetCode(email, code);
+    }
 
 
     public User registerUser(User user) {
@@ -65,5 +81,13 @@ public class AuthService {
                 .map(Role::getName)
                 .collect(Collectors.toList());
         return jwtService.generateToken(user.getUsername(), roles);
+    }
+
+    public void processForgotPassword(String email) {
+        userService.processForgotPassword(email);
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        userService.resetPassword(token, newPassword);
     }
 }

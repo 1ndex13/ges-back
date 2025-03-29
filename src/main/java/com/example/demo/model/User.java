@@ -41,4 +41,7 @@ public class User {
 
     @Column(columnDefinition = "boolean default true")
     private boolean active = true; // Добавляем поле active
+
+    private String resetCode;
+    private LocalDateTime codeExpiryDate;
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -25,8 +26,8 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "role") // Явно указываем имя колонки
-    private String role; // Возвращаем поле role как строку
+    @Column(name = "role")
+    private String role;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -40,8 +41,24 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
     @Column(columnDefinition = "boolean default true")
-    private boolean active = true; // Добавляем поле active
+    private boolean active = true;
 
     private String resetCode;
     private LocalDateTime codeExpiryDate;
+
+    // Новые поля для профиля
+    @Column(unique = true) // Никнейм может быть уникальным, если требуется
+    private String nickname;
+
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate; // Используем LocalDate для даты рождения
+
+    @Column(name = "avatar")
+    private String avatar; // Храним URL аватара как строку
 }

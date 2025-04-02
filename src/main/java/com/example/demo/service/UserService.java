@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.UserCreateDto;
 import com.example.demo.dto.UserDto;
+import com.example.demo.dto.UserProfileDTO; // Новый DTO для профиля
 import com.example.demo.dto.UserUpdateDto;
 import com.example.demo.model.Role;
 import com.example.demo.model.User;
@@ -15,16 +16,19 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
-
-
 
 @Service
 @RequiredArgsConstructor
@@ -33,53 +37,20 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
+    @Value("${file.upload-dir}") // Добавьте в application.properties, например, file.upload-dir=/uploads
+    private String uploadDir;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    // Существующие методы остаются без изменений
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
-    }
-
-    public UserDto createUser(UserCreateDto userDto) {
-        User user = new User();
-        user.setUsername(userDto.getUsername());
-        user.setEmail(userDto.getEmail());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setActive(true);
-
-        Set<Role> roles = userDto.getRoles().stream()
-                .map(roleName -> roleRepository.findByName(roleName)
-                        .orElseThrow(() -> new RuntimeException("Role not found: " + roleName)))
-                .collect(Collectors.toSet());
-
-        user.setRoles(roles);
-        return convertToDto(userRepository.save(user));
-    }
-
-    public UserDto updateUser(Long id, UserUpdateDto userDto) {
-        User user = userRepository.findById(id).orElseThrow();
-
-        if (userDto.getUsername() != null) {
-            user.setUsername(userDto.getUsername());
-        }
-        if (userDto.getEmail() != null) {
-            user.setEmail(userDto.getEmail());
-        }
-        if (userDto.getRoles() != null) {
-            Set<Role> roles = userDto.getRoles().stream()
-                    .map(roleName -> roleRepository.findByName(roleName)
-                            .orElseThrow(() -> new RuntimeException("Role not found: " + roleName)))
-                    .collect(Collectors.toSet());
-            user.setRoles(roles);
-        }
-        if (userDto.getActive() != null) {
-            user.setActive(userDto.getActive());
-        }
-
-        return convertToDto(userRepository.save(user));
-    }
-
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
     }
 
     private UserDto convertToDto(User user) {
@@ -134,21 +105,13 @@ public class UserService {
                 .collect(Collectors.toList());
     }
 
-    @Value("${app.base-url}")
-    private String baseUrl;
-
-
-    @Autowired
-    private JavaMailSender mailSender;
-
     public void processForgotPassword(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Пользователь с таким email не найден"));
 
-        // Генерируем 6-значный код
         String code = String.format("%06d", new Random().nextInt(999999));
         user.setResetCode(code);
-        user.setCodeExpiryDate(LocalDateTime.now().plusMinutes(15)); // Код действует 15 минут
+        user.setCodeExpiryDate(LocalDateTime.now().plusMinutes(15));
         userRepository.save(user);
 
         sendResetCodeEmail(user.getEmail(), code);
@@ -185,6 +148,36 @@ public class UserService {
         user.setCodeExpiryDate(null);
         userRepository.save(user);
     }
+
+    // Новые методы для профиля
+    public User updateProfile(String username, UserProfileDTO profileDTO) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        user.setNickname(profileDTO.getNickname());
+        user.setEmail(profileDTO.getEmail());
+        user.setFirstName(profileDTO.getFirstName());
+        user.setLastName(profileDTO.getLastName());
+        user.setBirthDate(profileDTO.getBirthDate());
+        if (profileDTO.getAvatar() != null) {
+            user.setAvatar(profileDTO.getAvatar());
+        }
+        return userRepository.save(user);
+    }
+
+    public String uploadAvatar(String username, MultipartFile file) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        try {
+            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir, fileName);
+            Files.createDirectories(filePath.getParent());
+            Files.write(filePath, file.getBytes());
+            String avatarUrl = baseUrl + "/uploads/" + fileName;
+            user.setAvatar(avatarUrl);
+            userRepository.save(user);
+            return avatarUrl;
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось загрузить аватар: " + e.getMessage(), e);
+        }
+    }
 }
-
-

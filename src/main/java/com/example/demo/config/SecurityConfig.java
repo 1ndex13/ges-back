@@ -20,9 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.io.File;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -47,13 +45,18 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-                        .requestMatchers("/api/orders").permitAll()  // в SecurityConfig.java
+                        .requestMatchers("/api/orders").permitAll()
 
-                        // Админские эндпоинты
-                        .requestMatchers(HttpMethod.GET, "/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/admin/**").hasRole("ADMIN")
+                        // Эндпоинты для пользователей (доступны аутентифицированным)
+                        .requestMatchers(HttpMethod.PUT, "/users/profile").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/users/upload-avatar").authenticated()
+
+                        // Админские эндпоинты под /users
+                        .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/users/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/users/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users/search").hasRole("ADMIN")
 
                         // Остальные запросы требуют аутентификации
                         .anyRequest().authenticated()
@@ -67,7 +70,7 @@ public class SecurityConfig {
     }
 
     @Configuration
-    public class WebConfig implements WebMvcConfigurer {
+    public static class WebConfig implements WebMvcConfigurer {
         @Override
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
             String uploadPath = Paths.get("uploads").toAbsolutePath().toString();
@@ -83,14 +86,13 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of("http://localhost:5174"));
         config.setAllowedMethods(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true); // Ключевая настройка!
+        config.setAllowCredentials(true);
         config.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {

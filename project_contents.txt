@@ -1,0 +1,2024 @@
+Project Structure:
+./pom.xml
+src/test/java/com/example/demo/GesApplicationTests.java
+src/main/java/com/example/demo/ServletInitializer.java
+src/main/java/com/example/demo/GesApplication.java
+src/main/java/com/example/demo/dto/UserUpdateDto.java
+src/main/java/com/example/demo/dto/UserProfileDTO.java
+src/main/java/com/example/demo/dto/ForgotPasswordRequest.java
+src/main/java/com/example/demo/dto/UserDto.java
+src/main/java/com/example/demo/dto/LoginRequest.java
+src/main/java/com/example/demo/dto/OrderRequest.java
+src/main/java/com/example/demo/dto/RegisterRequest.java
+src/main/java/com/example/demo/dto/UserCreateDto.java
+src/main/java/com/example/demo/repository/ProductRepository.java
+src/main/java/com/example/demo/repository/UserRepository.java
+src/main/java/com/example/demo/repository/RoleRepository.java
+src/main/java/com/example/demo/model/Product.java
+src/main/java/com/example/demo/model/Role.java
+src/main/java/com/example/demo/model/User.java
+src/main/java/com/example/demo/mapper/UserMapper.java
+src/main/java/com/example/demo/controller/OrderController.java
+src/main/java/com/example/demo/controller/AuthController.java
+src/main/java/com/example/demo/controller/AdminUserController.java
+src/main/java/com/example/demo/controller/ProductController.java
+src/main/java/com/example/demo/controller/UserController.java
+src/main/java/com/example/demo/service/EmailService.java
+src/main/java/com/example/demo/service/ProductService.java
+src/main/java/com/example/demo/service/AuthService.java
+src/main/java/com/example/demo/service/CustomUserDetailsService.java
+src/main/java/com/example/demo/service/UserService.java
+src/main/java/com/example/demo/config/SecurityConfig.java
+src/main/java/com/example/demo/config/util/JwtRequestFilter.java
+src/main/java/com/example/demo/config/util/JwtService.java
+src/main/resources/application.properties
+src/main/resources/static/scripts/insert_data.sql
+
+File Contents:
+pom.xml:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.2.0</version>
+		<relativePath/>
+	</parent>
+
+	<groupId>com.example</groupId>
+	<artifactId>demo</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<name>GES</name>
+	<description>Demo project for Spring Boot</description>
+
+	<properties>
+		<java.version>21</java.version>
+		<lombok.version>1.18.30</lombok.version>
+		<jjwt.version>0.11.5</jjwt.version>
+		<mapstruct.version>1.5.5.Final</mapstruct.version>
+	</properties>
+
+	<dependencies>
+		<!-- Spring Boot Starters -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>jakarta.mail</artifactId>
+			<version>2.0.1</version>
+		</dependency>
+
+		<!-- Database -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- Lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>${lombok.version}</version>
+			<scope>provided</scope>
+			<optional>true</optional>
+		</dependency>
+
+		<!-- JWT -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>${jjwt.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- MapStruct (если используется) -->
+		<dependency>
+			<groupId>org.mapstruct</groupId>
+			<artifactId>mapstruct</artifactId>
+			<version>${mapstruct.version}</version>
+		</dependency>
+
+		<!-- Тестирование -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+						<!-- Если используете MapStruct -->
+						<path>
+							<groupId>org.mapstruct</groupId>
+							<artifactId>mapstruct-processor</artifactId>
+							<version>${mapstruct.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
+```
+
+GesApplicationTests.java:
+```
+package com.example.demo;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class GesApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
+
+```
+
+ServletInitializer.java:
+```
+package com.example.demo;
+
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+
+public class ServletInitializer extends SpringBootServletInitializer {
+
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(GesApplication.class);
+	}
+
+}
+
+```
+
+GesApplication.java:
+```
+package com.example.demo;
+
+import com.example.demo.model.Role;
+import com.example.demo.model.User;
+import com.example.demo.repository.RoleRepository;
+import com.example.demo.repository.UserRepository;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@SpringBootApplication
+public class GesApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(GesApplication.class, args);
+	}
+
+	@Bean
+	public CommandLineRunner initRolesAndAdmin(RoleRepository roleRepository, UserRepository userRepository, PasswordEncoder passwordEncoder) {
+		return args -> {
+			// Инициализация роли USER
+			if (roleRepository.findByName("USER").isEmpty()) {
+				Role userRole = new Role();
+				userRole.setName("USER");
+				roleRepository.save(userRole);
+			}
+
+			// Инициализация роли ADMIN
+			Role adminRole = roleRepository.findByName("ADMIN")
+					.orElseGet(() -> {
+						Role newRole = new Role();
+						newRole.setName("ADMIN");
+						return roleRepository.save(newRole);
+					});
+
+			// Инициализация пользователя admin
+			if (userRepository.findByUsername("admin").isEmpty()) {
+				User admin = new User();
+				admin.setUsername("admin");
+				admin.setEmail("admin@example.com"); // Укажите email
+				admin.setPassword(passwordEncoder.encode("admin123"));
+				admin.setRole("ADMIN"); // Устанавливаем строковое поле role
+				admin.getRoles().add(adminRole); // Добавляем роль в коллекцию roles
+				userRepository.save(admin);
+			}
+		};
+	}
+}
+```
+
+UserUpdateDto.java:
+```
+package com.example.demo.dto;
+
+import lombok.Data;
+
+import java.util.Set;
+
+@Data
+public class UserUpdateDto {
+    private String username;
+    private String email;
+    private Set<String> roles;
+    private Boolean active;
+}
+```
+
+UserProfileDTO.java:
+```
+package com.example.demo.dto;
+
+import lombok.Data;
+
+import java.time.LocalDate;
+
+@Data
+public class UserProfileDTO {
+    private String nickname;
+    private String email;
+    private String firstName;
+    private String lastName;
+    private LocalDate birthDate;
+    private String avatar;
+}
+```
+
+ForgotPasswordRequest.java:
+```
+package com.example.demo.dto;
+
+public class ForgotPasswordRequest {
+    private String email;
+
+    // Геттеры и сеттеры
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+}
+```
+
+UserDto.java:
+```
+package com.example.demo.dto;
+
+import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.Set;
+
+@Data
+public class UserDto {
+    private Long id;
+    private String username;
+    private String email;
+    private Set<String> roles;
+    private boolean active;
+    private LocalDateTime createdAt;
+}
+```
+
+LoginRequest.java:
+```
+package com.example.demo.dto;
+
+
+public class LoginRequest {
+    private String username;
+    private String password;
+
+    // Геттеры и сеттеры
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+}
+```
+
+OrderRequest.java:
+```
+package com.example.demo.dto;
+
+// OrderRequest.java
+import jakarta.validation.constraints.*;
+import lombok.Data;
+
+@Data
+public class OrderRequest {
+    @NotBlank(message = "Фамилия обязательна")
+    private String lastName;
+
+    @NotBlank(message = "Имя обязательно")
+    private String firstName;
+
+    @NotBlank(message = "Телефон обязателен")
+    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Неверный формат телефона")
+    private String phone;
+
+    @NotBlank(message = "Email обязателен")
+    @Email(message = "Неверный формат email")
+    private String email;
+
+    @NotBlank(message = "Название услуги обязательно")
+    private String service;
+}
+
+
+```
+
+RegisterRequest.java:
+```
+package com.example.demo.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+@Data
+public class RegisterRequest {
+    @NotBlank(message = "Имя пользователя обязательно")
+    private String username;
+
+    @Email(message = "Некорректный email")
+    @NotBlank(message = "Email обязателен")
+    private String email;
+
+    @NotBlank(message = "Пароль обязателен")
+    @Size(min = 6, message = "Пароль должен содержать не менее 6 символов")
+    private String password;
+}
+```
+
+UserCreateDto.java:
+```
+package com.example.demo.dto;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+
+import java.util.Set;
+
+@Data
+public class UserCreateDto {
+    @NotBlank
+    private String username;
+    @Email
+    private String email;
+    @Size(min = 6) private String password;
+    private Set<String> roles;
+}
+```
+
+ProductRepository.java:
+```
+package com.example.demo.repository;
+
+import com.example.demo.model.Product;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface ProductRepository extends JpaRepository<Product, Long> {
+    // Здесь можно добавить дополнительные методы для поиска, если это необходимо
+}
+```
+
+UserRepository.java:
+```
+package com.example.demo.repository;
+
+import com.example.demo.model.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import java.util.Optional;
+
+public interface UserRepository
+        extends JpaRepository<User, Long>, JpaSpecificationExecutor<User> {  // <- Добавлено!
+
+    Optional<User> findByUsername(String username);
+    Optional<User> findByEmail(String email);
+}
+```
+
+RoleRepository.java:
+```
+package com.example.demo.repository;
+
+import com.example.demo.model.Role;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface RoleRepository extends JpaRepository<Role, Long> {
+    Optional<Role> findByName(String name);
+}
+```
+
+Product.java:
+```
+package com.example.demo.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import org.hibernate.annotations.CollectionId;
+
+@Data
+@Entity
+@Table(name = "products")
+public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private String description;
+
+    @Column(name = "img_src")
+    private String imgSrc;
+}
+```
+
+Role.java:
+```
+package com.example.demo.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+@Data
+@Entity
+@Table(name = "roles")
+public class Role {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String name;
+
+    public GrantedAuthority toAuthority() {
+        return new SimpleGrantedAuthority("ROLE_" + name);
+    }
+}
+```
+
+User.java:
+```
+package com.example.demo.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+@Data
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
+    private String username;
+
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @Column(name = "role")
+    private String role;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    private Set<Role> roles = new HashSet<>();
+
+    @Column(columnDefinition = "boolean default true")
+    private boolean active = true;
+
+    private String resetCode;
+    private LocalDateTime codeExpiryDate;
+
+    // Новые поля для профиля
+    @Column(unique = true) // Никнейм может быть уникальным, если требуется
+    private String nickname;
+
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
+
+    @Column(name = "birth_date")
+    private LocalDate birthDate; // Используем LocalDate для даты рождения
+
+    @Column(name = "avatar")
+    private String avatar; // Храним URL аватара как строку
+}
+```
+
+UserMapper.java:
+```
+package com.example.demo.mapper;
+
+import com.example.demo.dto.UserDto;
+import com.example.demo.model.User;
+import org.springframework.stereotype.Component;
+
+import java.util.stream.Collectors;
+
+
+@Component
+public class UserMapper {
+
+    public UserDto toDto(User user) {
+        UserDto dto = new UserDto();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setRoles(user.getRoles().stream()
+                .map(role -> role.getName())
+                .collect(Collectors.toSet()));
+        return dto;
+    }
+
+    public User toEntity(UserDto dto) {
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setActive(dto.isActive()); // Добавьте эту строку
+        return user;
+    }
+}
+
+```
+
+OrderController.java:
+```
+package com.example.demo.controller;
+
+import com.example.demo.dto.OrderRequest;
+import com.example.demo.service.EmailService;
+import jakarta.mail.AuthenticationFailedException;
+import jakarta.mail.MessagingException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+
+    private final EmailService emailService;
+
+    public OrderController(EmailService emailService) {
+        this.emailService = emailService;
+    }
+
+    @PostMapping
+    public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderRequest) {
+        try {
+            emailService.sendOrderEmail(orderRequest);
+            return ResponseEntity.ok().body("Заказ успешно отправлен");
+        } catch (AuthenticationFailedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Ошибка аутентификации: " + e.getMessage());
+        } catch (MessagingException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Ошибка отправки письма: " + e.getMessage());
+        }
+    }
+
+}
+```
+
+AuthController.java:
+```
+package com.example.demo.controller;
+
+import com.example.demo.dto.LoginRequest;
+import com.example.demo.model.Role;
+import com.example.demo.model.User;
+import com.example.demo.service.AuthService;
+import com.example.demo.service.CustomUserDetailsService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    @Autowired
+    private AuthService authService;
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody User user, HttpServletResponse httpResponse) {
+        try {
+            User registeredUser = authService.registerUser(user);
+            String token = authService.generateToken(registeredUser);
+            Map<String, Object> responseBody = new HashMap<>(); // Переименовано из response
+            responseBody.put("success", true);
+            responseBody.put("token", token);
+            responseBody.put("username", registeredUser.getUsername());
+            responseBody.put("email", registeredUser.getEmail());
+            responseBody.put("roles", registeredUser.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
+
+            // Установка cookie с JWT
+            Cookie jwtCookie = new Cookie("jwtToken", token);
+            jwtCookie.setHttpOnly(true); // Защита от XSS
+            jwtCookie.setSecure(false); // Используйте только с HTTPS
+            jwtCookie.setPath("/"); // Доступно для всего приложения
+            jwtCookie.setMaxAge(3600); // Срок действия 1 час
+            httpResponse.addCookie(jwtCookie); // Используем httpResponse вместо response
+
+            return ResponseEntity.ok(responseBody);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Ошибка регистрации: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse httpResponse) {
+        try {
+            Optional<User> userOpt = authService.authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                String token = authService.generateToken(user);
+                Map<String, Object> responseBody = new HashMap<>(); // Переименовано из response
+                responseBody.put("success", true);
+                responseBody.put("username", user.getUsername());
+                responseBody.put("roles", user.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
+
+                // Установка cookie с JWT
+                Cookie jwtCookie = new Cookie("jwtToken", token);
+                jwtCookie.setHttpOnly(true); // Защита от XSS
+                jwtCookie.setSecure(false); // Используйте только с HTTPS
+                jwtCookie.setPath("/"); // Доступно для всего приложения
+                jwtCookie.setMaxAge(3600); // Срок действия 1 час
+                httpResponse.addCookie(jwtCookie);
+
+                return ResponseEntity.ok(responseBody);
+            } else {
+                return ResponseEntity.status(401).body(Map.of("success", false, "message", "Неверный логин или пароль"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Ошибка авторизации: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/check")
+    public ResponseEntity<?> checkAuth(HttpServletRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Authentication: " + auth);
+        if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+            System.out.println("Principal: " + auth.getPrincipal());
+            CustomUserDetailsService.CustomUserDetails userDetails =
+                    (CustomUserDetailsService.CustomUserDetails) auth.getPrincipal();
+            User user = userDetails.getUser();
+            System.out.println("User extracted: " + user.getUsername());
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("username", user.getUsername());
+            response.put("email", user.getEmail());
+            response.put("roles", user.getRoles().stream().map(Role::getName).collect(Collectors.toList()));
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.status(401).body(Map.of("success", false, "message", "Не авторизован"));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("jwtToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // Удаляем cookie
+        response.addCookie(cookie);
+        return ResponseEntity.ok(Map.of("success", true, "message", "Выход выполнен"));
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            authService.processForgotPassword(email);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Код для сброса пароля отправлен на email"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/verify-reset-code")
+    public ResponseEntity<?> verifyResetCode(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String code = request.get("code");
+            authService.verifyResetCode(email, code);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Код подтвержден"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String newPassword = request.get("newPassword");
+            authService.resetPassword(email, newPassword);
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Пароль успешно изменен"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", e.getMessage()
+            ));
+        }
+    }
+}
+
+```
+
+AdminUserController.java:
+```
+package com.example.demo.controller;
+
+import com.example.demo.dto.UserDto;
+import com.example.demo.mapper.UserMapper;
+import com.example.demo.model.User;
+import com.example.demo.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/admin/users")
+@PreAuthorize("hasRole('ADMIN')")
+@RequiredArgsConstructor
+public class AdminUserController {
+
+    private final UserService userService;
+    private final UserMapper userMapper;
+
+    @GetMapping
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @PostMapping
+    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+        return ResponseEntity.ok(userMapper.toDto(userService.save(userMapper.toEntity(userDto))));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDto> updateUser(
+            @PathVariable Long id,
+            @RequestBody UserDto userDto) {
+        User user = userMapper.toEntity(userDto);
+        user.setActive(userDto.isActive()); // Добавьте эту строку
+        return ResponseEntity.ok(userMapper.toDto(userService.update(id, user)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<UserDto>> searchUsers(
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Boolean active
+    ) {
+        List<UserDto> users = userService.searchUsers(username, email, active);
+        return ResponseEntity.ok(users);
+    }
+}
+```
+
+ProductController.java:
+```
+package com.example.demo.controller;
+
+import com.example.demo.model.Product;
+import com.example.demo.service.ProductService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/products")
+public class ProductController {
+
+    private final ProductService productService;
+
+    @Autowired
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
+
+    @GetMapping
+    public List<Product> getAllProducts() {
+        return productService.getAllProducts();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Product> getProductById(@PathVariable Long id) {
+        return productService.getProductById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Product> addProduct(
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+        System.out.println("Title: " + title);
+        System.out.println("Description: " + description);
+        System.out.println("Image: " + (image != null ? image.getOriginalFilename() : "null"));
+        try {
+            Product product = new Product();
+            product.setTitle(title);
+            product.setDescription(description);
+            Product savedProduct = productService.addProduct(product, image);
+            return ResponseEntity.ok(savedProduct);
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Product> updateProduct(
+            @PathVariable Long id,
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+        try {
+            Product updatedProduct = new Product();
+            updatedProduct.setTitle(title);
+            updatedProduct.setDescription(description);
+
+            Product product = productService.updateProduct(id, updatedProduct, image);
+            return ResponseEntity.ok(product);
+        } catch (RuntimeException | IOException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
+    }
+}
+```
+
+UserController.java:
+```
+package com.example.demo.controller;
+
+import com.example.demo.dto.UserDto;
+import com.example.demo.dto.UserProfileDTO;
+import com.example.demo.mapper.UserMapper;
+import com.example.demo.model.User;
+import com.example.demo.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.security.Principal;
+import java.util.Collections;
+import java.util.List;
+
+@RestController
+@RequestMapping("/users")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserService userService;
+    private final UserMapper userMapper;
+
+    // Методы для обычных пользователей
+
+    @PutMapping("/profile")
+    public ResponseEntity<User> updateProfile(@RequestBody UserProfileDTO profileDTO, Principal principal) {
+        User updatedUser = userService.updateProfile(principal.getName(), profileDTO);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @PostMapping("/upload-avatar")
+    public ResponseEntity<?> uploadAvatar(@RequestParam("avatar") MultipartFile file, Principal principal) {
+        String avatarUrl = userService.uploadAvatar(principal.getName(), file);
+        return ResponseEntity.ok(Collections.singletonMap("avatarUrl", avatarUrl));
+    }
+
+    // Административные методы с ограничением доступа
+
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserDto> createUser(@RequestBody UserDto userDto) {
+        return ResponseEntity.ok(userMapper.toDto(userService.save(userMapper.toEntity(userDto))));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserDto> updateUser(
+            @PathVariable Long id,
+            @RequestBody UserDto userDto) {
+        User user = userMapper.toEntity(userDto);
+        user.setActive(userDto.isActive()); // Сохранение статуса активности
+        return ResponseEntity.ok(userMapper.toDto(userService.update(id, user)));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<UserDto>> searchUsers(
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Boolean active) {
+        List<UserDto> users = userService.searchUsers(username, email, active);
+        return ResponseEntity.ok(users);
+    }
+}
+```
+
+EmailService.java:
+```
+package com.example.demo.service;
+
+import com.example.demo.dto.OrderRequest;
+import jakarta.annotation.PostConstruct;
+import jakarta.mail.MessagingException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailSendException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+@Service
+public class EmailService {
+
+    private final JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String smtpUsername;
+
+    @Value("${spring.mail.password}")
+    private String smtpPassword;
+
+    @Value("${admin.email:admin@example.com}")
+    private String adminEmail;
+
+    public EmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    @PostConstruct
+    public void init() {
+        if (!StringUtils.hasText(smtpUsername) || !StringUtils.hasText(smtpPassword)) {
+            throw new IllegalStateException("SMTP credentials not configured properly!");
+        }
+        System.out.println("SMTP configured for: " + smtpUsername);
+        System.out.println("Admin email: " + adminEmail);
+    }
+
+    public void sendOrderEmail(OrderRequest order) throws MessagingException {
+        if (order == null || !StringUtils.hasText(adminEmail)) {
+            throw new IllegalArgumentException("Invalid order data or admin email not configured");
+        }
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(smtpUsername);
+            message.setTo(adminEmail);
+            message.setSubject(buildSubject(order));
+            message.setText(buildEmailContent(order));
+
+            mailSender.send(message);
+            System.out.println("Email successfully sent to: " + adminEmail);
+        } catch (MailAuthenticationException e) {
+            System.err.println("SMTP Authentication failed for user: " + smtpUsername);
+            throw new MessagingException("SMTP authentication failed. Please check credentials", e);
+        } catch (MailSendException e) {
+            System.err.println("Email sending failed: " + e.getMessage());
+            throw new MessagingException("Failed to send email. Please try again later", e);
+        }
+    }
+
+    private String buildSubject(OrderRequest order) {
+        return String.format("Новый заказ услуги: %s",
+                order.getService() != null ? order.getService() : "Без названия");
+    }
+
+    private String buildEmailContent(OrderRequest order) {
+        return String.format(
+                "Детали заказа:\n\n" +
+                        "Услуга: %s\n" +
+                        "Клиент: %s %s\n" +
+                        "Телефон: %s\n" +
+                        "Email клиента: %s\n\n" +
+                        "Дата: %s",
+                order.getService() != null ? order.getService() : "Не указано",
+                order.getLastName() != null ? order.getLastName() : "",
+                order.getFirstName() != null ? order.getFirstName() : "",
+                order.getPhone() != null ? order.getPhone() : "Не указан",
+                order.getEmail() != null ? order.getEmail() : "Не указан",
+                java.time.LocalDateTime.now()
+        );
+    }
+}
+```
+
+ProductService.java:
+```
+package com.example.demo.service;
+
+import com.example.demo.model.Product;
+import com.example.demo.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class ProductService {
+    private final ProductRepository productRepository;
+    private final Path uploadPath;
+
+    @Autowired
+    public ProductService(ProductRepository productRepository) throws IOException {
+        this.productRepository = productRepository;
+        this.uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
+        Files.createDirectories(uploadPath);
+    }
+
+
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
+    public Optional<Product> getProductById(Long id) {
+        return productRepository.findById(id);
+    }
+
+    public Product addProduct(Product product, MultipartFile image) throws IOException {
+        if (image != null && !image.isEmpty()) {
+            String imageUrl = saveImage(image);
+            product.setImgSrc(imageUrl);
+        }
+        return productRepository.save(product);
+    }
+
+    public Product updateProduct(Long id, Product updatedProduct, MultipartFile image) throws IOException {
+        return productRepository.findById(id)
+                .map(product -> {
+                    product.setTitle(updatedProduct.getTitle());
+                    product.setDescription(updatedProduct.getDescription());
+
+                    if (image != null && !image.isEmpty()) {
+                        try {
+                            String imageUrl = saveImage(image);
+                            product.setImgSrc(imageUrl);
+                        } catch (IOException e) {
+                            throw new RuntimeException("Ошибка при сохранении изображения", e);
+                        }
+                    }
+
+                    return productRepository.save(product);
+                })
+                .orElseThrow(() -> new RuntimeException("Товар не найден"));
+    }
+
+    public void deleteProduct(Long id) {
+        productRepository.deleteById(id);
+    }
+
+    public String saveImage(MultipartFile image) throws IOException {
+        String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
+        Path targetPath = uploadPath.resolve(fileName);
+        image.transferTo(targetPath);
+        return "/uploads/" + fileName;
+    }
+}
+```
+
+AuthService.java:
+```
+package com.example.demo.service;
+
+import com.example.demo.config.util.JwtService;
+import com.example.demo.model.Role;
+import com.example.demo.model.User;
+import com.example.demo.repository.RoleRepository;
+import com.example.demo.repository.UserRepository;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.security.Key;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+public class AuthService {
+
+    private final UserService userService;
+    private final Key jwtSecretKey;
+
+    public AuthService(UserService userService,
+                       @Value("${jwt.secret}") String jwtSecret) {
+        this.userService = userService;
+        this.jwtSecretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtService jwtService;
+
+    public void verifyResetCode(String email, String code) {
+        userService.verifyResetCode(email, code);
+    }
+
+
+    public User registerUser(User user) {
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new RuntimeException("Пользователь с таким именем уже существует");
+        }
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new RuntimeException("Пользователь с таким email уже существует");
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        // Устанавливаем роль USER
+        Role userRole = roleRepository.findByName("USER")
+                .orElseGet(() -> {
+                    Role newRole = new Role();
+                    newRole.setName("USER");
+                    return roleRepository.save(newRole);
+                });
+        user.getRoles().add(userRole);
+        user.setRole("USER"); // Устанавливаем строковое поле role
+
+        return userRepository.save(user);
+    }
+
+    public Optional<User> authenticateUser(String username, String password) {
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent() && passwordEncoder.matches(password, user.get().getPassword())) {
+            return user;
+        }
+        return Optional.empty();
+    }
+
+    public String generateToken(User user) {
+        List<String> roles = user.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toList());
+        return jwtService.generateToken(user.getUsername(), roles);
+    }
+
+    public void processForgotPassword(String email) {
+        userService.processForgotPassword(email);
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        userService.resetPassword(token, newPassword);
+    }
+}
+```
+
+CustomUserDetailsService.java:
+```
+package com.example.demo.service;
+
+import com.example.demo.model.User;
+import com.example.demo.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("Loading user: " + username);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+
+        System.out.println("User found: " + user.getUsername());
+        System.out.println("User roles: " + user.getRoles());
+
+        return new CustomUserDetails(user); // Возвращаем кастомный UserDetails
+    }
+
+    // Внутренний класс для реализации UserDetails
+    public static class CustomUserDetails implements UserDetails {
+        private final User user;
+
+        public CustomUserDetails(User user) {
+            this.user = user;
+        }
+
+        @Override
+        public Set<GrantedAuthority> getAuthorities() {
+            return user.getRoles().stream()
+                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                    .collect(Collectors.toSet());
+        }
+
+        @Override
+        public String getPassword() {
+            return user.getPassword();
+        }
+
+        @Override
+        public String getUsername() {
+            return user.getUsername();
+        }
+
+        @Override
+        public boolean isAccountNonExpired() {
+            return true;
+        }
+
+        @Override
+        public boolean isAccountNonLocked() {
+            return true;
+        }
+
+        @Override
+        public boolean isCredentialsNonExpired() {
+            return true;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
+
+        public User getUser() {
+            return user;
+        }
+    }
+}
+```
+
+UserService.java:
+```
+package com.example.demo.service;
+
+import com.example.demo.dto.UserCreateDto;
+import com.example.demo.dto.UserDto;
+import com.example.demo.dto.UserProfileDTO; // Новый DTO для профиля
+import com.example.demo.dto.UserUpdateDto;
+import com.example.demo.model.Role;
+import com.example.demo.model.User;
+import com.example.demo.repository.RoleRepository;
+import com.example.demo.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class UserService {
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Value("${app.base-url}")
+    private String baseUrl;
+
+    @Value("${file.upload-dir}") // Добавьте в application.properties, например, file.upload-dir=/uploads
+    private String uploadDir;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    // Существующие методы остаются без изменений
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    private UserDto convertToDto(User user) {
+        UserDto dto = new UserDto();
+        dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setRoles(user.getRoles().stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet()));
+        dto.setActive(user.isActive());
+        dto.setCreatedAt(user.getCreatedAt());
+        return dto;
+    }
+
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+
+    public User update(Long id, User user) {
+        User existing = userRepository.findById(id).orElseThrow();
+        existing.setUsername(user.getUsername());
+        existing.setEmail(user.getEmail());
+        return userRepository.save(existing);
+    }
+
+    public void delete(Long id) {
+        userRepository.deleteById(id);
+    }
+
+    public List<UserDto> searchUsers(String username, String email, Boolean active) {
+        Specification<User> spec = Specification.where(null);
+
+        if (username != null && !username.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("username")), "%" + username.toLowerCase() + "%")
+            );
+        }
+        if (email != null && !email.isEmpty()) {
+            spec = spec.and((root, query, cb) ->
+                    cb.like(cb.lower(root.get("email")), "%" + email.toLowerCase() + "%")
+            );
+        }
+        if (active != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("active"), active)
+            );
+        }
+
+        return userRepository.findAll(spec).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public void processForgotPassword(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь с таким email не найден"));
+
+        String code = String.format("%06d", new Random().nextInt(999999));
+        user.setResetCode(code);
+        user.setCodeExpiryDate(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+
+        sendResetCodeEmail(user.getEmail(), code);
+    }
+
+    private void sendResetCodeEmail(String email, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Код для сброса пароля");
+        message.setText("Ваш код для сброса пароля: " + code +
+                "\n\nКод действителен в течение 15 минут.");
+        mailSender.send(message);
+    }
+
+    public void verifyResetCode(String email, String code) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        if (!code.equals(user.getResetCode())) {
+            throw new RuntimeException("Неверный код");
+        }
+
+        if (user.getCodeExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Срок действия кода истек");
+        }
+    }
+
+    public void resetPassword(String email, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetCode(null);
+        user.setCodeExpiryDate(null);
+        userRepository.save(user);
+    }
+
+    // Новые методы для профиля
+    public User updateProfile(String username, UserProfileDTO profileDTO) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        user.setNickname(profileDTO.getNickname());
+        user.setEmail(profileDTO.getEmail());
+        user.setFirstName(profileDTO.getFirstName());
+        user.setLastName(profileDTO.getLastName());
+        user.setBirthDate(profileDTO.getBirthDate());
+        if (profileDTO.getAvatar() != null) {
+            user.setAvatar(profileDTO.getAvatar());
+        }
+        return userRepository.save(user);
+    }
+
+    public String uploadAvatar(String username, MultipartFile file) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+        try {
+            String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(uploadDir, fileName);
+            Files.createDirectories(filePath.getParent());
+            Files.write(filePath, file.getBytes());
+            String avatarUrl = baseUrl + "/uploads/" + fileName;
+            user.setAvatar(avatarUrl);
+            userRepository.save(user);
+            return avatarUrl;
+        } catch (IOException e) {
+            throw new RuntimeException("Не удалось загрузить аватар: " + e.getMessage(), e);
+        }
+    }
+}
+```
+
+SecurityConfig.java:
+```
+package com.example.demo.config;
+
+import com.example.demo.config.util.JwtRequestFilter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.nio.file.Paths;
+import java.util.List;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final JwtRequestFilter jwtRequestFilter;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
+                        // Публичные эндпоинты
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/products",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+                        .requestMatchers("/api/orders").permitAll()
+
+                        // Эндпоинты для пользователей (доступны аутентифицированным)
+                        .requestMatchers(HttpMethod.PUT, "/users/profile").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/users/upload-avatar").authenticated()
+
+                        // Админские эндпоинты под /users
+                        .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/users/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/users/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users/search").hasRole("ADMIN")
+
+                        // Остальные запросы требуют аутентификации
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Configuration
+    public static class WebConfig implements WebMvcConfigurer {
+        @Override
+        public void addResourceHandlers(ResourceHandlerRegistry registry) {
+            String uploadPath = Paths.get("uploads").toAbsolutePath().toString();
+            registry.addResourceHandler("/uploads/**")
+                    .addResourceLocations("file:" + uploadPath + "/")
+                    .setCachePeriod(3600);
+        }
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:5174"));
+        config.setAllowedMethods(List.of("*"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+        config.setExposedHeaders(List.of("Authorization"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
+```
+
+JwtRequestFilter.java:
+```
+package com.example.demo.config.util;
+
+import com.example.demo.service.CustomUserDetailsService;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+@Component
+public class JwtRequestFilter extends OncePerRequestFilter {
+
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
+
+    @Autowired
+    private JwtService jwtService;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        String username = null;
+        String jwt = null;
+
+        final String authorizationHeader = request.getHeader("Authorization");
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            jwt = authorizationHeader.substring(7);
+            System.out.println("JWT from header: " + jwt);
+            try {
+                username = jwtService.decodeToken(jwt).getSubject();
+                System.out.println("JWT decoded from header, username: " + username);
+            } catch (Exception e) {
+                System.out.println("Invalid JWT token from header: " + e.getMessage());
+            }
+        }
+
+        if (jwt == null) {
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("jwtToken".equals(cookie.getName())) {
+                        jwt = cookie.getValue();
+                        System.out.println("JWT from cookie: " + jwt);
+                        try {
+                            username = jwtService.decodeToken(jwt).getSubject();
+                            System.out.println("JWT decoded from cookie, username: " + username);
+                        } catch (Exception e) {
+                            System.out.println("Invalid JWT token from cookie: " + e.getMessage());
+                        }
+                        break;
+                    }
+                }
+            } else {
+                System.out.println("No cookies found in request");
+            }
+        }
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            System.out.println("UserDetails loaded: " + userDetails.getUsername());
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+            System.out.println("Authentication set for user: " + username);
+        } else {
+            System.out.println("Username is null or already authenticated: " + (username == null ? "null" : username));
+        }
+        chain.doFilter(request, response);
+    }
+    private String extractJwtFromRequest(HttpServletRequest request) {
+        // 1. Проверка Authorization header
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+
+        // 2. Проверка кук
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("jwtToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
+        return null;
+    }
+}
+```
+
+JwtService.java:
+```
+package com.example.demo.config.util;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import javax.crypto.SecretKey;
+import java.util.Base64;
+import java.util.Date;
+import java.util.List;
+
+@Service
+public class JwtService {
+
+    // Фиксированный ключ, заданный в application.properties или как константа
+    private final SecretKey SECRET_KEY;
+
+    public JwtService(@Value("${jwt.secret}") String secret) {
+        // Декодируем строку base64 в ключ
+        this.SECRET_KEY = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
+    }
+
+    public String generateToken(String username, List<String> roles) {
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("roles", roles)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 час
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public Claims decodeToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+}
+```
+
+application.properties:
+```
+spring.application.name=GES
+
+# DataBase config
+spring.datasource.url=jdbc:postgresql://localhost:5333/local_db2
+spring.datasource.username=postgres
+spring.datasource.password=12345
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+
+# HikariCP (??? ??????????)
+spring.datasource.hikari.maximum-pool-size=10
+spring.datasource.hikari.minimum-idle=2
+spring.datasource.hikari.idle-timeout=30000
+spring.datasource.hikari.max-lifetime=1800000
+
+server.port=8080
+
+# application.properties
+jwt.secret=VGhpcyBpcyBhIHNlY3JldCBrZXkgZm9yIEpXVCBzaWduYXR1cmU
+
+# Gmail SMTP ?????????
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username=ajnursamsutdinov9309@gmail.com
+spring.mail.password=bhqjsnmmlgxjwibz
+spring.mail.protocol=smtp
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+
+admin.email = ajnursamsutdinov9309@gmail.com
+app.base-url=http://localhost:5174
+file.upload-dir=/uploads
+```
+
+insert_data.sql:
+```
+insert into roles
+values
+--    (1, 'Роль пользователя', 'USER'),
+    (2, 'Роль библиотекаря', 'LIBRARIAN');
+
+--АВТОРЫ
+drop sequence authors_sequence;
+create sequence authors_sequence;
+alter sequence authors_sequence owner to postgres;
+
+
+truncate table books_authors;
+truncate table authors cascade;
+INSERT INTO authors (id, created_by, created_when, name, description, birth_date)
+VALUES (nextval('public.authors_sequence'), 'admin', '2022-11-15 13:46:11.797607', 'Александр Грибоедов', 'Писатель Александр Грибоедов ' ||
+                                                                                              'родился в 1795 году в Москве. С детства Александр был невероятно развитым мальчиком — в шесть
+                     лет он знал уже три языка, а еще через 6 — еще три.', '1795-01-15');
+INSERT INTO authors (id, created_by, created_when, name, description, birth_date)
+VALUES (nextval('public.authors_sequence'), 'admin', '2022-11-15 13:47:02.414728', 'Джейн Остин',
+        'Остен Джейн — выдающий британский писатель, классик мировой литературы. Родилась в 1775 году в небольшом городке в графстве Хэмпшир. В семье кроме Джейн росло еще 7 детей. У будущей романистки было 6 братьев и сестра Кассандра. ',
+        '1775-12-16');
+INSERT INTO authors (id, created_by, created_when, name, description, birth_date)
+VALUES (nextval('public.authors_sequence'), 'admin', '2022-11-15 13:48:53.363059', 'Федор Достоевский',
+        'Гордость отечественной литературы Федор Михайлович Достоевский родился в Москве в 1821 году в семье врача. Почти все свое детство Федор и его шесть братьев и сестер провели внутри больничных стен на работе отца. Воспитывались дети в строгости.',
+        '1821-11-11');
+INSERT INTO authors (id, created_by, created_when, name, description, birth_date)
+VALUES (nextval('public.authors_sequence'), 'admin', '2022-11-15 13:50:12.953413', 'Эмили Бронте',
+        'член знаменитого литературного английского семейства, при жизни была, пожалуй, самой незаметной на фоне своих знаменитых сестры и брата. С детства отличаясь живым и ярким воображением',
+        '1818-07-30');
+INSERT INTO authors (id, created_by, created_when, name, description, birth_date)
+VALUES (nextval('public.authors_sequence'), 'admin', '2022-11-15 13:51:08.314682', 'Михаил Булгаков',
+        'Михаил Афанасьевич Булгаков появился на свет 15 мая (по старому стилю — 3 мая) 1891 года в Киеве. Его родители были преподавателями и сделали все, чтобы дать сыну блестящее образование.',
+        '1891-05-15');
+INSERT INTO authors (id, created_by, created_when, name, description, birth_date)
+VALUES (nextval('public.authors_sequence'), 'admin', '2022-11-15 13:51:08.314682', 'Илья Ильф', 'настоящее имя — Иехиел-Лейб бен Арьевич Файнзильберг; 1897—1937', '1897-01-01');
+INSERT INTO authors (id, created_by, created_when, name, description, birth_date)
+VALUES (nextval('public.authors_sequence'), 'admin', '2022-11-15 13:51:08.314682', 'Евгений Петров', 'настоящее имя — Евгений Петрович Катаев; 1902—1942', '1902-01-01');
+
+select * from book_rent_info
+
+
+--BOOKS
+drop sequence books_sequence;
+create sequence books_sequence;
+alter sequence books_sequence owner to postgres;
+truncate table books cascade;
+INSERT INTO books (id, created_by, created_when, amount, genre, online_copy_path, publish_date, storage_place, title, publisher, page_count)
+VALUES (nextval('public.books_sequence'), 'admin', '2022-11-15 13:54:28.115079', 100, 1, null, '1966-01-01', '1-М', 'Мастер и Маргарита', 'журнал «Москва»', 416);
+INSERT INTO books (id, created_by, created_when, amount, genre, online_copy_path, publish_date, storage_place, title, publisher, page_count)
+VALUES (nextval('public.books_sequence'), 'admin', '2022-11-15 13:56:12.600618', 10, 2, null, '1925-01-01', '1-Б', 'Белая Гвардия', 'журнал «Россия»', 416);
+INSERT INTO books (id, created_by, created_when, amount, genre, online_copy_path, publish_date, storage_place, title, publisher, page_count)
+VALUES (nextval('public.books_sequence'), 'admin', '2022-11-15 13:57:05.231780', 11, 3, null, '2023-01-15', '17-Г', 'Грозовой перевал', 'Азбука, 2023 г.', 384);
+INSERT INTO books (id, created_by, created_when, amount, genre, online_copy_path, publish_date, storage_place, title, publisher, page_count)
+VALUES (nextval('public.books_sequence'), 'admin', '2022-11-15 13:57:43.883671', 11, 4, null, '2022-01-01', '1-И', 'Идиот', 'Эксмо', 636);
+INSERT INTO books (id, created_by, created_when, amount, genre, online_copy_path, publish_date, storage_place, title, publisher, page_count)
+VALUES (nextval('public.books_sequence'), 'admin', '2022-11-15 13:58:12.172216', 111, 3, null, '2022-03-22', '13-Г', 'Гордость и предубеждение', 'АСТ', 416);
+INSERT INTO books (id, created_by, created_when, amount, genre, online_copy_path, publish_date, storage_place, title, publisher, page_count)
+VALUES (nextval('public.books_sequence'), 'admin', '2022-11-15 13:58:12.172216', 110, 2, null, '2016-03-11', '1-Г', 'Горе от ума', 'Азбука', 256);
+INSERT INTO books (id, created_by, created_when, amount, genre, online_copy_path, publish_date, storage_place, title, publisher, page_count)
+VALUES (nextval('public.books_sequence'), 'admin', '2022-11-15 13:58:12.172216', 2, 1, null, '2016-03-11', '1-Г', 'Золотой теленок', 'Текст', 432);
+
+--BOOKS_AUTHORS
+INSERT INTO public.books_authors (book_id, author_id)
+VALUES (1, 5);
+INSERT INTO public.books_authors (book_id, author_id)
+VALUES (2, 5);
+INSERT INTO public.books_authors (book_id, author_id)
+VALUES (3, 4);
+INSERT INTO public.books_authors (book_id, author_id)
+VALUES (4, 3);
+INSERT INTO public.books_authors (book_id, author_id)
+VALUES (5, 2);
+INSERT INTO public.books_authors (book_id, author_id)
+VALUES (6, 1);
+INSERT INTO public.books_authors (book_id, author_id)
+VALUES (7, 6);
+INSERT INTO public.books_authors (book_id, author_id)
+VALUES (7, 7);
+
+insert into public.users(id, username, email, password)
+values  (5, 'user', 'tyty@tyty.ru', 123)
+```

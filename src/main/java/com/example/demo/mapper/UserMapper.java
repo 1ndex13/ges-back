@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 
 @Component
-public class UserMapper {
+public class UserMapper implements EntityMapper<UserDto, User> {
 
     public UserDto toDto(User user) {
         UserDto dto = new UserDto();

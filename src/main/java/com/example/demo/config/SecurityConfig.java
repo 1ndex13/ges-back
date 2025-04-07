@@ -43,6 +43,7 @@ public class SecurityConfig {
                                 "/api/products",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
+                                "/api/reviews/product/**",
                                 "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers("/api/orders").permitAll()

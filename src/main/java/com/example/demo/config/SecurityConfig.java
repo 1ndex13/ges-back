@@ -47,7 +47,8 @@ public class SecurityConfig {
                                 "/swagger-ui.html"
                         ).permitAll()
                         .requestMatchers("/api/orders").permitAll()
-
+                        .requestMatchers("/api/orders").authenticated()
+                        .requestMatchers("/api/admin/orders/**").hasRole("ADMIN")
                         // Эндпоинты для пользователей (доступны аутентифицированным)
                         .requestMatchers(HttpMethod.PUT, "/users/profile").authenticated()
                         .requestMatchers(HttpMethod.POST, "/users/upload-avatar").authenticated()

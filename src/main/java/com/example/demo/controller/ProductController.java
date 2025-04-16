@@ -38,6 +38,7 @@ public class ProductController {
     public ResponseEntity<Product> addProduct(
             @RequestParam("title") String title,
             @RequestParam("description") String description,
+            @RequestParam("category") String category,
             @RequestParam(value = "image", required = false) MultipartFile image) {
         System.out.println("Title: " + title);
         System.out.println("Description: " + description);
@@ -46,6 +47,7 @@ public class ProductController {
             Product product = new Product();
             product.setTitle(title);
             product.setDescription(description);
+            product.setCategory(category);
             Product savedProduct = productService.addProduct(product, image);
             return ResponseEntity.ok(savedProduct);
         } catch (IOException e) {
@@ -59,12 +61,13 @@ public class ProductController {
             @PathVariable Long id,
             @RequestParam("title") String title,
             @RequestParam("description") String description,
+            @RequestParam("category") String category,  // New parameter
             @RequestParam(value = "image", required = false) MultipartFile image) {
         try {
             Product updatedProduct = new Product();
             updatedProduct.setTitle(title);
             updatedProduct.setDescription(description);
-
+            updatedProduct.setCategory(category);  // Set category
             Product product = productService.updateProduct(id, updatedProduct, image);
             return ResponseEntity.ok(product);
         } catch (RuntimeException | IOException e) {

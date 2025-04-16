@@ -48,7 +48,7 @@ public class ProductService {
                 .map(product -> {
                     product.setTitle(updatedProduct.getTitle());
                     product.setDescription(updatedProduct.getDescription());
-
+                    product.setCategory(updatedProduct.getCategory());
                     if (image != null && !image.isEmpty()) {
                         try {
                             String imageUrl = saveImage(image);

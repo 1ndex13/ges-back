@@ -2,11 +2,13 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Order;
 import com.example.demo.repository.OrderRepository;
+import com.example.demo.service.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/orders")
@@ -14,9 +16,11 @@ import java.util.List;
 public class AdminOrderController {
 
     private final OrderRepository orderRepository;
+    private final OrderService orderService;
 
-    public AdminOrderController(OrderRepository orderRepository) {
+    public AdminOrderController(OrderRepository orderRepository, OrderService orderService) {
         this.orderRepository = orderRepository;
+        this.orderService = orderService;
     }
 
     @GetMapping
@@ -31,5 +35,11 @@ public class AdminOrderController {
         order.setStatus(status);
         orderRepository.save(order);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/statistics")
+    public ResponseEntity<Map<String, Long>> getOrderStatistics() {
+        Map<String, Long> statistics = orderService.getOrderStatisticsByService();
+        return ResponseEntity.ok(statistics);
     }
 }
